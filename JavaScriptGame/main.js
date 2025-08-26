@@ -9,7 +9,7 @@ CanvasContext.fillRect(0, 0, canvas.width, canvas.height);
 // sprite is the visual representation of an object in the game
 //how it moves, looks and interacts with the game 
 
-const Gravity = 0.6;
+const Gravity = 0.5;
 
 class Sprite {
     constructor({position, velocity, color = 'red', offset}){
@@ -173,6 +173,7 @@ function animate() {
     ){
         Player1.isAttacking = false;
         console.log('Collision detected');
+        document.getElementById('player2Health').style.width = '20%';
     }
 
     if(
@@ -181,6 +182,7 @@ function animate() {
     ){
         Player2.isAttacking = false;
         console.log('Collision detected 2');
+        document.getElementById('player1Health').style.width = '20%';
     }
 
 }
