@@ -9,35 +9,49 @@ CanvasContext.fillRect(0, 0, canvas.width, canvas.height);
 // sprite is the visual representation of an object in the game
 //how it moves, looks and interacts with the game 
 
-const Gravity = 0.4;
-const Bounce = 0.7;
+const Gravity = 0.6;
 
 class Sprite {
-    constructor({position, velocity, color = 'red'}){
+    constructor({position, velocity, color = 'red', offset}){
         this.position = position;
         this.velocity = velocity
         this.height = 150;
+        this.width = 50;
         this.LastKey
         this.AttackBox = {
-            position: this.position,
-            width: 100,
-            height: 50
+            position:{
+                x: this.position.x,
+                y: this.position.y
+            },
+            offset,
+                width: 100,
+                height: 50 
         }
+        //this is false by default
+        this.isAttacking;
         this.color = color;
     }
     //how players will look
     PlayerContext (){
         CanvasContext.fillStyle = this.color;
-        CanvasContext.fillRect(this.position.x, this.position.y, 50, this.height);
+        CanvasContext.fillRect(this.position.x, this.position.y, this.width, this.height);
 
         //attack box
-        CanvasContext.fillStyle = 'green';
-        CanvasContext.fillRect(this.AttackBox.position.x, this.AttackBox.position.y, this.AttackBox.width, this.AttackBox   .height);
+        if(this.isAttacking === true){
+            CanvasContext.fillStyle = 'green';
+            CanvasContext.fillRect(this.AttackBox.position.x, 
+                                   this.AttackBox.position.y, 
+                                   this.AttackBox.width, 
+                                   this.AttackBox.height);
+        }
 
     }
     //update is how the sprite moves and interacts with the game
     update(){
         this.PlayerContext();
+        this.AttackBox.position.x = this.position.x + this.AttackBox.offset.x;
+        this.AttackBox.position.y = this.position.y;
+        
         this.position.y += this.velocity.y;
         this.position.x += this.velocity.x;
 
@@ -46,6 +60,14 @@ class Sprite {
         }else{
             this.velocity.y += Gravity;
         }
+    }
+    //attack method if is attacking is true theres a collision
+    attack(){
+        this.isAttacking = true;
+
+        setTimeout(() => {
+            this.isAttacking = false;
+        }, 100);
     }
 }
 //setting the properties for Player1    
@@ -56,6 +78,10 @@ const Player1 = new Sprite({
     },
 
     velocity: {
+        x: 0,
+        y: 0
+    },
+    offset:{
         x: 0,
         y: 0
     }
@@ -71,8 +97,11 @@ const Player2 = new Sprite({
         x: 0,
         y: 0
     },
-    color: 'blue'
-    
+    color: 'blue',
+    offset:{
+        x: -50,
+        y: 0
+    }
 });
 
 //functions
@@ -101,13 +130,25 @@ const keys = {
     
 }
 
+function attackingCollision({rectangle1, rectangle2}){
+    return(
+        rectangle1.AttackBox.position.x + rectangle1.AttackBox.width >= rectangle2.position.x 
+        && rectangle1.AttackBox.position.x <= rectangle2.position.x + rectangle2.width 
+        //collision for the y attackbox
+        && rectangle1.AttackBox.position.y + rectangle1.AttackBox.height >= rectangle2.position.y
+        && rectangle1.AttackBox.position.y <= rectangle2.position.y + rectangle2.height 
+    );
+}
+
 function animate() {
     window.requestAnimationFrame(animate);
     CanvasContext.fillStyle = "black";
     CanvasContext.fillRect(0, 0, canvas.width, canvas.height);
     Player1.update();
     Player2.update();
+  
 
+    //detect keys for player movement
     if(keys.a.pressed && Player1.LastKey === 'a'){
         Player1.velocity.x = -5;
     }else if(keys.d.pressed && Player1.LastKey === 'd'){
@@ -116,7 +157,7 @@ function animate() {
         Player1.velocity.x = 0;
     }
 
-
+    //detect keys for player movement
     if(keys.ArrowLeft.pressed && Player2.LastKey === 'ArrowLeft'){
         Player2.velocity.x = -5;
     }else if(keys.ArrowRight.pressed && Player2.LastKey === 'ArrowRight'){
@@ -124,9 +165,29 @@ function animate() {
     }else{
         Player2.velocity.x = 0;
     }
+
+    //detect for attack collision
+    if(
+        attackingCollision({rectangle1: Player1, rectangle2: Player2}) 
+        && Player1.isAttacking
+    ){
+        Player1.isAttacking = false;
+        console.log('Collision detected');
+    }
+
+    if(
+        attackingCollision({rectangle1: Player2, rectangle2: Player1}) 
+        && Player2.isAttacking
+    ){
+        Player2.isAttacking = false;
+        console.log('Collision detected 2');
+    }
+
 }
 
 animate();  
+
+//event listeners the players key for action and movement
 window.addEventListener('keydown', (event) => {
     switch(event.key){
         case 'd' :
@@ -143,6 +204,10 @@ window.addEventListener('keydown', (event) => {
             Player1.velocity.y = -18
         break;
 
+        case ' ' :
+            Player1.attack();
+        break;
+
         case 'ArrowRight' :
             keys.ArrowRight.pressed = true
             Player2.LastKey = 'ArrowRight'
@@ -156,6 +221,9 @@ window.addEventListener('keydown', (event) => {
         case 'ArrowUp' :
             Player2.velocity.y = -18
         break;
+
+       case 'Enter' :
+           Player2.attack();
     }
 
 

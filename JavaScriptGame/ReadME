@@ -5,3 +5,14 @@
 Learning JS through game development
 Learn OOP
 
+Concepts
+window.requestAnimationFrame(animate)
+endless loop of frames
+
+
+CanvasContext.fillStyle = "black";
+    CanvasContext.fillRect(0, 0, canvas.width, canvas.height);
+    Player1.update();
+    Player2.update();
+
+this code updates the game state and renders the players on the canvas each frame.
