@@ -30,6 +30,7 @@ class Sprite {
         //this is false by default
         this.isAttacking;
         this.color = color;
+        this.health = 100;
     }
     //how players will look
     PlayerContext (){
@@ -129,6 +130,36 @@ const keys = {
     }
     
 }
+let timer = 11;
+function decreaseTimer(){
+    setTimeout(decreaseTimer, 1000)
+        timer--;
+        if (timer >= 0) {
+            document.querySelector('#timer').innerHTML = timer;
+        }
+        // Game over if any player's health reaches 0
+        if (Player1.health <= 0) {
+            document.querySelector('#result').innerHTML = 'Player 2 wins!';
+            timer = 0; // Stop timer
+            return;
+        } else if(Player2.health <= 0) {
+            document.querySelector('#result').innerHTML = 'Player 1 wins!';
+            timer = 0; // Stop timer
+            return;
+        }
+        // Game over when timer runs out
+        if (timer === 0 && Player1.health > Player2.health) {
+            document.querySelector('#result').innerHTML = 'Player 1 wins!';
+        } else if(timer === 0 && Player2.health > Player1.health) {
+            document.querySelector('#result').innerHTML = 'Player 2 wins!';
+        } else if(timer === 0 && Player1.health === Player2.health) {
+            document.querySelector('#result').innerHTML = 'Tie';
+        }
+
+}
+ 
+decreaseTimer()
+
 
 function attackingCollision({rectangle1, rectangle2}){
     return(
@@ -141,6 +172,7 @@ function attackingCollision({rectangle1, rectangle2}){
 }
 
 function animate() {
+
     window.requestAnimationFrame(animate);
     CanvasContext.fillStyle = "black";
     CanvasContext.fillRect(0, 0, canvas.width, canvas.height);
@@ -172,8 +204,9 @@ function animate() {
         && Player1.isAttacking
     ){
         Player1.isAttacking = false;
+        Player2.health -= 20;
         console.log('Collision detected');
-        document.getElementById('player2Health').style.width = '20%';
+        document.getElementById('player2Health').style.width = Player2.health + '%' ;
     }
 
     if(
@@ -181,8 +214,9 @@ function animate() {
         && Player2.isAttacking
     ){
         Player2.isAttacking = false;
+        Player1.health -= 20;
         console.log('Collision detected 2');
-        document.getElementById('player1Health').style.width = '20%';
+        document.getElementById('player1Health').style.width = Player1.health + '%' ;
     }
 
 }
